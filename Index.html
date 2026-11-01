@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دیجی‌استور | فروشگاه اینترنتی</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- فونت فارسی وزیرمتن -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <!-- آیکون‌های FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .digi-red {
+            background-color: #ef394e;
+        }
+        .digi-red-text {
+            color: #ef394e;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+ 
+    <!-- نوار مدیریت بالای سایت (مخصوص صاحب فروشگاه) -->
+    <div class="bg-gray-900 text-white text-xs sm:text-sm py-2.5 px-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>نسخه مدیریتی فعال است | کد تخفیف تست مشتریان: <strong class="text-amber-400 select-all">DIGI20</strong></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openAdminModal()" class="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>پنل مدیریت فروشگاه</span>
+                    <span id="adminOrderBadge" class="bg-red-600 text-white text-[11px] px-1.5 py-0.5 rounded-full hidden">۰</span>
+                </button>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- هدر اصلی مشابه دیجی‌کالا -->
+    <header class="bg-white shadow-sm sticky top-[44px] z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <!-- لوگو و جستجو -->
+                <div class="flex items-center gap-6 flex-1">
+                    <a href="#" class="text-2xl sm:text-3xl font-black digi-red-text tracking-tight shrink-0" id="brandNameDisplay">
+                        دیجی‌استور
+                    </a>
+                    <div class="relative flex-1 max-w-xl">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            oninput="renderProducts()"
+                            placeholder="جستجو در تمام کالاها..." 
+                            class="w-full bg-gray-100 text-sm rounded-xl pr-10 pl-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+                        >
+                        <i class="fa-solid fa-magnifying-glass text-gray-400 absolute right-3.5 top-3.5"></i>
+                    </div>
+                </div>
+ 
+                <!-- دکمه‌های کاربری و سبد خرید -->
+                <div class="flex items-center justify-end gap-3">
+                    <div class="text-xs text-gray-500 hidden sm:flex items-center gap-1.5 border border-gray-200 rounded-xl px-3.5 py-2.5">
+                        <i class="fa-regular fa-user text-gray-700 text-sm"></i>
+                        <span>خوش آمدید، مشتری گرامی</span>
+                    </div>
+ 
+                    <button onclick="toggleCart(true)" class="relative flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold px-4 py-2.5 rounded-xl transition">
+                        <i class="fa-solid fa-cart-shopping text-lg"></i>
+                        <span class="text-sm">سبد خرید</span>
+                        <span id="cartCountBadge" class="digi-red text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">۰</span>
+                    </button>
+                </div>
+            </div>
+ 
+            <!-- دسته‌بندی‌ها -->
+            <nav class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-3 mt-3 border-t border-gray-100 text-sm">
+                <button onclick="setCategory('all')" data-cat="all" class="cat-btn digi-red text-white px-4 py-1.5 rounded-lg font-medium shrink-0 transition">
+                    <i class="fa-solid fa-border-all ml-1"></i> همه کالاها
+                </button>
+                <button onclick="setCategory('موبایل')" data-cat="موبایل" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium shrink-0 transition">
+                    <i class="fa-solid fa-mobile-screen-button ml-1"></i> موبایل
+                </button>
+                <button onclick="setCategory('لپ‌تاپ')" data-cat="لپ‌تاپ" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium shrink-0 transition">
+                    <i class="fa-solid fa-laptop ml-1"></i> لپ‌تاپ و کامپیوتر
+                </button>
+                <button onclick="setCategory('کنسول و بازی')" data-cat="کنسول و بازی" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium shrink-0 transition">
+                    <i class="fa-solid fa-gamepad ml-1"></i> کنسول و بازی
+                </button>
+                <button onclick="setCategory('صوتی و گجت')" data-cat="صوتی و گجت" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium shrink-0 transition">
+                    <i class="fa-solid fa-headphones ml-1"></i> هدفون و گجت
+                </button>
+                <button onclick="setCategory('لوازم خانگی')" data-cat="لوازم خانگی" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium shrink-0 transition">
+                    <i class="fa-solid fa-blender ml-1"></i> لوازم خانگی
+                </button>
+            </nav>
+        </div>
+    </header>
+ 
+    <!-- محتوای اصلی -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+ 
+        <!-- بنر تبلیغاتی بالا -->
+        <section class="rounded-2xl overflow-hidden shadow-md bg-gradient-to-l from-red-600 via-rose-500 to-amber-500 text-white p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-3 text-center md:text-right">
+                <span class="bg-white/20 backdrop-blur-sm text-xs font-bold px-3 py-1 rounded-full">جشنواره فروش ویژه</span>
+                <h1 class="text-2xl sm:text-4xl font-black leading-tight">خرید هوشمندانه با ارسال سریع به سراسر کشور</h1>
+                <p class="text-white/90 text-sm sm:text-base max-w-xl">با وارد کردن کد تخفیف <strong class="bg-white text-red-600 px-2 py-0.5 rounded font-extrabold">DIGI20</strong> در سبد خرید، ۲۰٪ تخفیف نقدی روی کل فاکتور خود دریافت کنید!</p>
+            </div>
+            <div class="flex gap-4 text-center shrink-0">
+                <div class="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                    <i class="fa-solid fa-truck-fast text-3xl mb-1"></i>
+                    <div class="text-xs font-bold">ارسال اکسپرس</div>
+                </div>
+                <div class="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                    <i class="fa-solid fa-shield-halved text-3xl mb-1"></i>
+                    <div class="text-xs font-bold">ضمانت اصالت کالا</div>
+                </div>
+            </div>
+        </section>
+ 
+        <!-- بخش پیشنهاد شگفت‌انگیز -->
+        <section class="digi-red rounded-2xl p-4 sm:p-6 shadow-md">
+            <div class="flex flex-col lg:flex-row items-center gap-4">
+                <!-- ستون سمت راست شگفت‌انگیز و تایمر -->
+                <div class="w-full lg:w-52 text-white flex lg:flex-col items-center justify-between lg:justify-center text-center shrink-0 py-2">
+                    <div>
+                        <i class="fa-solid fa-fire-flame-curved text-4xl sm:text-5xl mb-2 text-amber-300"></i>
+                        <h2 class="text-xl sm:text-2xl font-black leading-snug">پیشنهاد<br class="hidden lg:inline"> شگفت‌انگیز</h2>
+                    </div>
+                    <!-- تایمر معکوس -->
+                    <div class="flex items-center gap-1.5 mt-2 lg:mt-4 text-gray-900 font-bold text-sm" dir="ltr">
+                        <span id="timerHours" class="bg-white w-9 h-9 flex items-center justify-center rounded-lg shadow">۰۸</span>
+                        <span class="text-white font-black">:</span>
+                        <span id="timerMinutes" class="bg-white w-9 h-9 flex items-center justify-center rounded-lg shadow">۴۵</span>
+                        <span class="text-white font-black">:</span>
+                        <span id="timerSeconds" class="bg-white w-9 h-9 flex items-center justify-center rounded-lg shadow">۱۲</span>
+                    </div>
+                </div>
+ 
+                <!-- اسلایدر کارت‌های شگفت‌انگیز -->
+                <div id="amazingSlider" class="w-full flex gap-3 overflow-x-auto no-scrollbar pb-1">
+                    <!-- با جاوااسکریپت پر می‌شود -->
+                </div>
+            </div>
+        </section>
+ 
+        <!-- بخش لیست تمام کالاها و مرتب‌سازی -->
+        <section class="space-y-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2 font-bold text-gray-800">
+                    <i class="fa-solid fa-layer-group digi-red-text"></i>
+                    <span id="currentCategoryTitle">همه کالاهای فروشگاه</span>
+                    <span id="productCountText" class="text-xs text-gray-400 font-normal"></span>
+                </div>
+ 
+                <div class="flex items-center gap-2 text-xs sm:text-sm">
+                    <span class="text-gray-500"><i class="fa-solid fa-arrow-down-wide-short ml-1"></i>مرتب‌سازی:</span>
+                    <select id="sortSelect" onchange="renderProducts()" class="bg-gray-100 rounded-xl px-3 py-2 font-medium focus:outline-none">
+                        <option value="popular">پرفروش‌ترین</option>
+                        <option value="cheapest">ارزان‌ترین</option>
+                        <option value="expensive">گران‌ترین</option>
+                        <option value="discount">بیشترین تخفیف</option>
+                    </select>
+                </div>
+            </div>
+ 
+            <!-- شبکه محصولات -->
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- با جاوااسکریپت پر می‌شود -->
+            </div>
+        </section>
+    </main>
+ 
+    <!-- فوتر -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-8 text-sm text-gray-600">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="font-black text-lg digi-red-text" id="footerBrandName">دیجی‌استور</span>
+                <p class="text-xs text-gray-400 mt-1">تمامی حقوق این فروشگاه محفوظ است.</p>
+            </div>
+            <div class="flex gap-6 text-xs font-medium">
+                <span>پشتیبانی ۲۴ ساعته</span>
+                <span>۷ روز ضمانت بازگشت کالا</span>
+                <span>پرداخت امن شاپرک</span>
+            </div>
+        </div>
+    </footer>
+ 
+    <!-- دراور سبد خرید کشویی -->
+    <div id="cartDrawerOverlay" onclick="toggleCart(false)" class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-xs"></div>
+    <aside id="cartDrawer" class="fixed top-0 left-0 h-full w-full max-w-md bg-white z-50 shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+            <h3 class="font-bold text-lg flex items-center gap-2">
+                <i class="fa-solid fa-bag-shopping digi-red-text"></i>
+                <span>سبد خرید شما</span>
+            </h3>
+            <button onclick="toggleCart(false)" class="text-gray-400 hover:text-gray-700 text-xl px-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+ 
+        <!-- لیست آیتم‌های سبد خرید -->
+        <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+ 
+        <!-- بخش کد تخفیف و جمع فاکتور -->
+        <div class="p-4 border-t bg-gray-50 space-y-3">
+            <div class="flex gap-2">
+                <input type="text" id="discountInput" placeholder="کد تخفیف (مثلا DIGI20)" class="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none">
+                <button onclick="applyDiscountCode()" class="bg-gray-800 hover:bg-gray-900 text-white text-xs font-bold px-4 rounded-xl transition">اعمال کد</button>
+            </div>
+            <div id="discountStatusText" class="text-xs text-emerald-600 font-medium hidden"></div>
+ 
+            <div class="space-y-1 text-sm pt-2 border-t">
+                <div class="flex justify-between text-gray-500">
+                    <span>جمع کالاها:</span>
+                    <span id="cartSubtotal">۰ تومان</span>
+                </div>
+                <div class="flex justify-between text-emerald-600" id="cartDiscountRow">
+                    <span>سود شما از تخفیف:</span>
+                    <span id="cartDiscountAmount">۰ تومان</span>
+                </div>
+                <div class="flex justify-between font-black text-base text-gray-900 pt-1">
+                    <span>مبلغ قابل پرداخت:</span>
+                    <span id="cartFinalTotal" class="digi-red-text">۰ تومان</span>
+                </div>
+            </div>
+ 
+            <button onclick="openCheckoutModal()" class="w-full digi-red hover:bg-red-600 text-white font-bold py-3 rounded-xl shadow transition flex justify-center items-center gap-2">
+                <span>ادامه جهت تسویه حساب</span>
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+        </div>
+    </aside>
+ 
+    <!-- مودال شبیه‌ساز درگاه پرداخت بانکی -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-emerald-600 text-xl"></i>
+                    <h3 class="font-bold text-lg">درگاه پرداخت اینترنتی شاپرک</h3>
+                </div>
+                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-gray-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+ 
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-sm flex justify-between items-center">
+                <span class="text-emerald-800">مبلغ قابل پرداخت:</span>
+                <strong id="gatewayAmount" class="text-emerald-700 text-base">۰ تومان</strong>
+            </div>
+ 
+            <form onsubmit="submitOrder(event)" class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1 font-medium">نام و نام خانوادگی گیرنده *</label>
+                    <input type="text" id="customerName" required placeholder="مثلاً: علی محمدی" class="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1 font-medium">شماره موبایل *</label>
+                    <input type="tel" id="customerPhone" required placeholder="0912XXXXXXX" class="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1 font-medium">آدرس دقیق پستی *</label>
+                    <textarea id="customerAddress" required rows="2" placeholder="استان، شهر، خیابان، پلاک..." class="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">شماره کارت (تستی)</label>
+                        <input type="text" value="6037-9975-XXXX-XXXX" disabled class="w-full bg-gray-100 border rounded-xl px-3 py-2 text-xs text-gray-500 text-left" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">رمز دوم پویا</label>
+                        <input type="password" value="123456" disabled class="w-full bg-gray-100 border rounded-xl px-3 py-2 text-xs text-gray-500 text-left" dir="ltr">
+                    </div>
+                </div>
+ 
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow mt-2 transition">
+                    پرداخت و ثبت نهایی سفارش
+                </button>
+            </form>
+        </div>
+    </div>
+ 
+    <!-- مودال پنل مدیریت اختصاصی صاحب سایت -->
+    <div id="adminModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- هدر پنل مدیریت -->
+            <div class="bg-gray-900 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-amber-400 text-xl"></i>
+                    <h3 class="font-bold text-lg">پنل مدیریت فروشگاه (بدون نیاز به کدنویسی)</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+ 
+            <!-- محتوای اسکرول‌شونده پنل مدیریت -->
+            <div class="p-6 overflow-y-auto space-y-8 text-sm">
+ 
+                <!-- ۱. تغییر نام برند فروشگاه -->
+                <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+                    <h4 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-store text-red-500"></i> تنظیمات نام برند فروشگاه
+                    </h4>
+                    <div class="flex gap-2 max-w-md">
+                        <input type="text" id="adminBrandInput" placeholder="نام فروشگاه شما..." class="flex-1 border rounded-xl px-3 py-2">
+                        <button onclick="saveBrandName()" class="bg-gray-900 text-white px-4 py-2 rounded-xl font-bold hover:bg-gray-800">ذخیره نام</button>
+                    </div>
+                </div>
+ 
+                <!-- ۲. افزودن کالای جدید -->
+                <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+                    <h4 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-emerald-600"></i> افزودن محصول جدید به سایت
+                    </h4>
+                    <form onsubmit="addNewProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <input type="text" id="newProdTitle" required placeholder="نام کالا (مثلاً: گلکسی S24 اولترا)" class="border rounded-xl px-3 py-2">
+                        <select id="newProdCategory" class="border rounded-xl px-3 py-2 bg-white">
+                            <option value="موبایل">موبایل</option>
+                            <option value="لپ‌تاپ">لپ‌تاپ</option>
+                            <option value="کنسول و بازی">کنسول و بازی</option>
+                            <option value="صوتی و گجت">صوتی و گجت</option>
+                            <option value="لوازم خانگی">لوازم خانگی</option>
+                        </select>
+                        <input type="number" id="newProdPrice" required placeholder="قیمت اصلی به تومان (مثلا 215000000)" class="border rounded-xl px-3 py-2">
+                        <input type="number" id="newProdDiscount" min="0" max="99" value="0" placeholder="درصد تخفیف (0 تا 99)" class="border rounded-xl px-3 py-2">
+                        <input type="url" id="newProdImage" placeholder="لینک تصویر کالا (اختیاری)" class="border rounded-xl px-3 py-2">
+                        <label class="flex items-center gap-2 bg-white border rounded-xl px-3 py-2 cursor-pointer">
+                            <input type="checkbox" id="newProdAmazing" class="w-4 h-4 accent-red-600">
+                            <span>نمایش در پیشنهاد شگفت‌انگیز</span>
+                        </label>
+                        <button type="submit" class="sm:col-span-2 md:col-span-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
+                            افزودن فوری کالا به فروشگاه
+                        </button>
+                    </form>
+                </div>
+ 
+                <!-- ۳. سفارش‌های ثبت‌شده مشتریان -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-amber-500"></i> سفارش‌های ثبت‌شده مشتریان
+                    </h4>
+                    <div id="adminOrdersList" class="space-y-2"></div>
+                </div>
+ 
+                <!-- ۴. مدیریت و ویرایش کالاهای موجود -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-boxes-stacked text-blue-600"></i> لیست کالاهای فعلی (ویرایش قیمت یا حذف)
+                        </h4>
+                        <button onclick="resetDefaultData()" class="text-xs text-red-600 hover:underline">بازنشانی به قیمت‌های پیش‌فرض</button>
+                    </div>
+                    <div id="adminProductsList" class="divide-y border rounded-xl overflow-hidden bg-white"></div>
+                </div>
+ 
+            </div>
+        </div>
+    </div>
+ 
+    <!-- اسکریپت اصلی فروشگاه با قیمت‌های به‌روز بازار -->
+    <script>
+        const defaultProducts = [
+            {
+                id: 1,
+                title: "گوشی موبایل اپل مدل iPhone 16 Pro Max ظرفیت 256 گیگابایت",
+                category: "موبایل",
+                price: 425000000,
+                discount: 5,
+                amazing: true,
+                sales: 142,
+                image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 2,
+                title: "کنسول بازی سونی مدل PlayStation 5 Pro ظرفیت 2 ترابایت به همراه دسته اضافه",
+                category: "کنسول و بازی",
+                price: 360000000,
+                discount: 8,
+                amazing: true,
+                sales: 210,
+                image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 3,
+                title: "کنسول بازی سونی مدل PlayStation 5 Slim ظرفیت 1 ترابایت به همراه دو دسته",
+                category: "کنسول و بازی",
+                price: 215000000,
+                discount: 6,
+                amazing: true,
+                sales: 198,
+                image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 4,
+                title: "لپ‌تاپ 13 اینچی اپل مدل MacBook Air M3 ظرفیت 512 گیگابایت",
+                category: "لپ‌تاپ",
+                price: 340000000,
+                discount: 10,
+                amazing: true,
+                sales: 95,
+                image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 5,
+                title: "هدفون بلوتوثی اپل مدل AirPods Pro 2nd Generation با درگاه USB-C",
+                category: "صوتی و گجت",
+                price: 68500000,
+                discount: 15,
+                amazing: true,
+                sales: 310,
+                image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 6,
+                title: "ساعت هوشمند اپل مدل Apple Watch Series 10 بدنه آلومینیومی",
+                category: "صوتی و گجت",
+                price: 118000000,
+                discount: 5,
+                amazing: false,
+                sales: 88,
+                image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 7,
+                title: "اسپرسوساز حرفه ای دلونگی مدل Dedica EC685 با بدنه استیل",
+                category: "لوازم خانگی",
+                price: 78000000,
+                discount: 12,
+                amazing: false,
+                sales: 175,
+                image: "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 8,
+                title: "لپ‌تاپ گیمینگ ایسوس مدل ROG Strix G16 پردازنده Core i7 گرافیک RTX 4060",
+                category: "لپ‌تاپ",
+                price: 385000000,
+                discount: 4,
+                amazing: false,
+                sales: 64,
+                image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+ 
+        let products = JSON.parse(localStorage.getItem('digi_products_v2')) || defaultProducts;
+        let cart = JSON.parse(localStorage.getItem('digi_cart_v2')) || [];
+        let orders = JSON.parse(localStorage.getItem('digi_orders_v2')) || [];
+        let brandName = localStorage.getItem('digi_brand') || 'دیجی‌استور';
+        let selectedCategory = 'all';
+        let extraDiscountPercent = 0;
+ 
+        function toPersianNum(num) {
+            return Number(num).toLocaleString('fa-IR');
+        }
+ 
+        function getFinalPrice(product) {
+            return Math.round(product.price * (100 - product.discount) / 100);
+        }
+ 
+        function saveState() {
+            localStorage.setItem('digi_products_v2', JSON.stringify(products));
+            localStorage.setItem('digi_cart_v2', JSON.stringify(cart));
+            localStorage.setItem('digi_orders_v2', JSON.stringify(orders));
+            localStorage.setItem('digi_brand', brandName);
+        }
+ 
+        function initApp() {
+            document.getElementById('brandNameDisplay').textContent = brandName;
+            document.getElementById('footerBrandName').textContent = brandName;
+            document.getElementById('adminBrandInput').value = brandName;
+            renderAmazingSlider();
+            renderProducts();
+            updateCartUI();
+            updateAdminOrderBadge();
+            startCountdown();
+        }
+ 
+        function renderAmazingSlider() {
+            const container = document.getElementById('amazingSlider');
+            const amazingItems = products.filter(p => p.amazing || p.discount >= 8);
+ 
+            container.innerHTML = amazingItems.map(p => {
+                const finalPrice = getFinalPrice(p);
+                return `
+                    <div class="bg-white rounded-xl p-3 w-56 shrink-0 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div>
+                            <div class="relative h-36 mb-2 flex items-center justify-center">
+                                <img src="${p.image}" alt="${p.title}" class="max-h-full object-contain rounded-lg">
+                                ${p.discount > 0 ? `<span class="absolute top-1 right-1 digi-red text-white text-xs font-bold px-2 py-0.5 rounded-full">${toPersianNum(p.discount)}٪</span>` : ''}
+                            </div>
+                            <h3 class="text-xs font-bold text-gray-800 line-clamp-2 leading-relaxed h-10">${p.title}</h3>
+                        </div>
+                        <div class="mt-3 pt-2 border-t">
+                            ${p.discount > 0 ? `<div class="text-[11px] text-gray-400 line-through text-left">${toPersianNum(p.price)}</div>` : ''}
+                            <div class="flex items-center justify-between mt-1">
+                                <button onclick="addToCart(${p.id})" class="digi-red hover:bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center transition" title="افزودن به سبد">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                                <div class="text-left font-black text-sm text-gray-900">
+                                    ${toPersianNum(finalPrice)} <span class="text-[10px] font-normal text-gray-500">تومان</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+ 
+        function setCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = 'cat-btn digi-red text-white px-4 py-1.5 rounded-lg font-medium shrink-0 transition';
+                } else {
+                    btn.className = 'cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium shrink-0 transition';
+                }
+            });
+            document.getElementById('currentCategoryTitle').textContent = cat === 'all' ? 'همه کالاهای فروشگاه' : `دسته‌بندی: ${cat}`;
+            renderProducts();
+        }
+ 
+        function renderProducts() {
+            const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+            const sortVal = document.getElementById('sortSelect').value;
+ 
+            let filtered = products.filter(p => {
+                const matchCat = selectedCategory === 'all' || p.category === selectedCategory;
+                const matchSearch = p.title.toLowerCase().includes(searchVal) || p.category.toLowerCase().includes(searchVal);
+                return matchCat && matchSearch;
+            });
+ 
+            if (sortVal === 'cheapest') {
+                filtered.sort((a, b) => getFinalPrice(a) - getFinalPrice(b));
+            } else if (sortVal === 'expensive') {
+                filtered.sort((a, b) => getFinalPrice(b) - getFinalPrice(a));
+            } else if (sortVal === 'discount') {
+                filtered.sort((a, b) => b.discount - a.discount);
+            } else {
+                filtered.sort((a, b) => (b.sales || 0) - (a.sales || 0));
+            }
+ 
+            document.getElementById('productCountText').textContent = `(${toPersianNum(filtered.length)} کالا)`;
+ 
+            const grid = document.getElementById('productsGrid');
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full bg-white rounded-2xl p-12 text-center text-gray-400">کالایی مطابق با جستجوی شما یافت نشد.</div>`;
+                return;
+            }
+ 
+            grid.innerHTML = filtered.map(p => {
+                const finalPrice = getFinalPrice(p);
+                return `
+                    <div class="bg-white rounded-2xl p-4 shadow-xs hover:shadow-lg transition flex flex-col justify-between border border-gray-100">
+                        <div>
+                            <div class="relative h-48 mb-3 flex items-center justify-center bg-gray-50 rounded-xl p-2">
+                                <img src="${p.image}" alt="${p.title}" class="max-h-full object-contain">
+                                <span class="absolute top-2 left-2 bg-gray-800/75 text-white text-[10px] px-2 py-0.5 rounded-md">${p.category}</span>
+                                ${p.discount > 0 ? `<span class="absolute top-2 right-2 digi-red text-white text-xs font-bold px-2.5 py-0.5 rounded-full">${toPersianNum(p.discount)}٪ تخفیف</span>` : ''}
+                            </div>
+                            <h3 class="font-bold text-sm text-gray-800 leading-relaxed line-clamp-2 h-11">${p.title}</h3>
+                        </div>
+ 
+                        <div class="mt-4 pt-3 border-t border-gray-100 space-y-3">
+                            <div class="flex justify-between items-end min-h-[42px]">
+                                <span class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-check-circle ml-1"></i>موجود در انبار</span>
+                                <div class="text-left">
+                                    ${p.discount > 0 ? `<div class="text-xs text-gray-400 line-through">${toPersianNum(p.price)}</div>` : ''}
+                                    <div class="font-black text-base text-gray-900">${toPersianNum(finalPrice)} <span class="text-xs font-normal text-gray-500">تومان</span></div>
+                                </div>
+                            </div>
+                            <button onclick="addToCart(${p.id})" class="w-full digi-red hover:bg-red-600 text-white text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>افزودن به سبد خرید</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+ 
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+ 
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ id: product.id, qty: 1 });
+            }
+            saveState();
+            updateCartUI();
+            toggleCart(true);
+        }
+ 
+        function changeQty(productId, delta) {
+            const itemIndex = cart.findIndex(i => i.id === productId);
+            if (itemIndex === -1) return;
+ 
+            cart[itemIndex].qty += delta;
+            if (cart[itemIndex].qty <= 0) {
+                cart.splice(itemIndex, 1);
+            }
+            saveState();
+            updateCartUI();
+        }
+ 
+        function applyDiscountCode() {
+            const code = document.getElementById('discountInput').value.trim().toUpperCase();
+            const statusEl = document.getElementById('discountStatusText');
+            if (code === 'DIGI20') {
+                extraDiscountPercent = 20;
+                statusEl.textContent = 'کد تخفیف ۲۰ درصدی DIGI20 با موفقیت اعمال شد!';
+                statusEl.className = 'text-xs text-emerald-600 font-bold block';
+            } else {
+                extraDiscountPercent = 0;
+                statusEl.textContent = 'کد تخفیف نامعتبر است (کد صحیح: DIGI20)';
+                statusEl.className = 'text-xs text-red-600 font-bold block';
+            }
+            updateCartUI();
+        }
+ 
+        function getCartTotals() {
+            let rawSubtotal = 0;
+            let afterProductDiscount = 0;
+ 
+            cart.forEach(item => {
+                const p = products.find(prod => prod.id === item.id);
+                if (p) {
+                    rawSubtotal += p.price * item.qty;
+                    afterProductDiscount += getFinalPrice(p) * item.qty;
+                }
+            });
+ 
+            const couponDiscount = Math.round(afterProductDiscount * (extraDiscountPercent / 100));
+            const finalPayable = afterProductDiscount - couponDiscount;
+            const totalSaved = rawSubtotal - finalPayable;
+ 
+            return { rawSubtotal, finalPayable, totalSaved };
+        }
+ 
+        function updateCartUI() {
+            const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
+            document.getElementById('cartCountBadge').textContent = toPersianNum(totalCount);
+ 
+            const container = document.getElementById('cartItemsContainer');
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400 space-y-2">
+                        <i class="fa-solid fa-basket-shopping text-4xl"></i>
+                        <p class="text-sm">سبد خرید شما خالی است.</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = cart.map(item => {
+                    const p = products.find(prod => prod.id === item.id);
+                    if (!p) return '';
+                    const unitPrice = getFinalPrice(p);
+                    return `
+                        <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border">
+                            <img src="${p.image}" class="w-14 h-14 object-contain bg-white rounded-lg p-1 border">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-xs font-bold text-gray-800 truncate">${p.title}</h4>
+                                <div class="text-xs digi-red-text font-bold mt-1">${toPersianNum(unitPrice)} تومان</div>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white border rounded-lg px-2 py-1">
+                                <button onclick="changeQty(${p.id}, 1)" class="text-emerald-600 font-bold px-1">+</button>
+                                <span class="text-xs font-bold w-4 text-center">${toPersianNum(item.qty)}</span>
+                                <button onclick="changeQty(${p.id}, -1)" class="text-red-500 font-bold px-1">-</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+ 
+            const { rawSubtotal, finalPayable, totalSaved } = getCartTotals();
+            document.getElementById('cartSubtotal').textContent = `${toPersianNum(rawSubtotal)} تومان`;
+            document.getElementById('cartDiscountAmount').textContent = `${toPersianNum(totalSaved)} تومان`;
+            document.getElementById('cartFinalTotal').textContent = `${toPersianNum(finalPayable)} تومان`;
+        }
+ 
+        function toggleCart(open) {
+            const drawer = document.getElementById('cartDrawer');
+            const overlay = document.getElementById('cartDrawerOverlay');
+            if (open) {
+                overlay.classList.remove('hidden');
+                drawer.classList.remove('-translate-x-full');
+            } else {
+                overlay.classList.add('hidden');
+                drawer.classList.add('-translate-x-full');
+            }
+        }
+ 
+        function openCheckoutModal() {
+            if (cart.length === 0) {
+                alert('سبد خرید شما خالی است!');
+                return;
+            }
+            const { finalPayable } = getCartTotals();
+            document.getElementById('gatewayAmount').textContent = `${toPersianNum(finalPayable)} تومان`;
+            toggleCart(false);
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+ 
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+ 
+        function submitOrder(e) {
+            e.preventDefault();
+            const { finalPayable } = getCartTotals();
+            const newOrder = {
+                id: Math.floor(100000 + Math.random() * 900000),
+                customer: document.getElementById('customerName').value,
+                phone: document.getElementById('customerPhone').value,
+                address: document.getElementById('customerAddress').value,
+                total: finalPayable,
+                date: new Date().toLocaleDateString('fa-IR'),
+                itemsCount: cart.reduce((s, i) => s + i.qty, 0)
+            };
+ 
+            orders.unshift(newOrder);
+            cart = [];
+            extraDiscountPercent = 0;
+            saveState();
+            updateCartUI();
+            updateAdminOrderBadge();
+            closeCheckoutModal();
+            e.target.reset();
+ 
+            alert(`پرداخت با موفقیت انجام شد!\nکد رهگیری سفارش شما: ${toPersianNum(newOrder.id)}`);
+        }
+ 
+        function updateAdminOrderBadge() {
+            const badge = document.getElementById('adminOrderBadge');
+            if (orders.length > 0) {
+                badge.textContent = toPersianNum(orders.length);
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+ 
+        function openAdminModal() {
+            renderAdminLists();
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+ 
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+ 
+        function saveBrandName() {
+            const val = document.getElementById('adminBrandInput').value.trim();
+            if (!val) return;
+            brandName = val;
+            saveState();
+            initApp();
+            alert('نام برند فروشگاه با موفقیت تغییر کرد.');
+        }
+ 
+        function addNewProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('newProdTitle').value.trim();
+            const category = document.getElementById('newProdCategory').value;
+            const price = Number(document.getElementById('newProdPrice').value);
+            const discount = Number(document.getElementById('newProdDiscount').value) || 0;
+            const amazing = document.getElementById('newProdAmazing').checked;
+            const image = document.getElementById('newProdImage').value.trim() || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80";
+ 
+            products.unshift({
+                id: Date.now(),
+                title,
+                category,
+                price,
+                discount,
+                amazing,
+                sales: 1,
+                image
+            });
+ 
+            saveState();
+            renderAmazingSlider();
+            renderProducts();
+            renderAdminLists();
+            e.target.reset();
+            alert('محصول جدید با موفقیت به فروشگاه اضافه شد!');
+        }
+ 
+        function updateProductPrice(id) {
+            const priceInput = document.getElementById(`editPrice_${id}`);
+            const discInput = document.getElementById(`editDisc_${id}`);
+            const prod = products.find(p => p.id === id);
+            if (!prod || !priceInput) return;
+ 
+            prod.price = Number(priceInput.value) || prod.price;
+            prod.discount = Math.min(99, Math.max(0, Number(discInput.value) || 0));
+ 
+            saveState();
+            renderAmazingSlider();
+            renderProducts();
+            updateCartUI();
+            renderAdminLists();
+            alert('قیمت و تخفیف جدید کالا با موفقیت ذخیره شد!');
+        }
+ 
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            cart = cart.filter(c => c.id !== id);
+            saveState();
+            renderAmazingSlider();
+            renderProducts();
+            updateCartUI();
+            renderAdminLists();
+        }
+ 
+        function resetDefaultData() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید کالاها را به قیمت‌های روز پیش‌فرض برگردانید؟')) {
+                localStorage.removeItem('digi_products_v2');
+                products = [...defaultProducts];
+                saveState();
+                initApp();
+                renderAdminLists();
+            }
+        }
+ 
+        function renderAdminLists() {
+            const ordersEl = document.getElementById('adminOrdersList');
+            if (orders.length === 0) {
+                ordersEl.innerHTML = `<div class="text-xs text-gray-400 bg-gray-50 p-3 rounded-xl border">هنوز سفارشی توسط مشتریان ثبت نشده است.</div>`;
+            } else {
+                ordersEl.innerHTML = orders.map(o => `
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex flex-wrap justify-between items-center gap-2 text-xs">
+                        <div>
+                            <strong class="text-emerald-900">کد سفارش #${toPersianNum(o.id)}</strong> - <span>${o.customer} (${o.phone})</span>
+                            <div class="text-gray-600 mt-0.5">آدرس: ${o.address} | تعداد اقلام: ${toPersianNum(o.itemsCount)}</div>
+                        </div>
+                        <div class="font-black text-emerald-700 text-sm">${toPersianNum(o.total)} تومان</div>
+                    </div>
+                `).join('');
+            }
+ 
+            const prodEl = document.getElementById('adminProductsList');
+            prodEl.innerHTML = products.map(p => `
+                <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-gray-50">
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                        <img src="${p.image}" class="w-10 h-10 object-contain rounded border bg-white p-0.5 shrink-0">
+                        <div class="truncate">
+                            <div class="font-bold text-gray-800 truncate">${p.title}</div>
+                            <div class="text-gray-500 mt-0.5">قیمت فعلی: ${toPersianNum(p.price)} تومان (${toPersianNum(p.discount)}٪ تخفیف)</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <input type="number" id="editPrice_${p.id}" value="${p.price}" class="border rounded-lg px-2 py-1 w-32 text-left" dir="ltr" title="قیمت به تومان">
+                        <input type="number" id="editDisc_${p.id}" value="${p.discount}" min="0" max="99" class="border rounded-lg px-2 py-1 w-14 text-center" dir="ltr" title="درصد تخفیف">
+                        <button onclick="updateProductPrice(${p.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg font-bold">
+                            ثبت قیمت
+                        </button>
+                        <button onclick="deleteProduct(${p.id})" class="bg-red-50 hover:bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg font-bold">
+                            حذف
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+ 
+        function startCountdown() {
+            let totalSeconds = 8 * 3600 + 45 * 60 + 12;
+            setInterval(() => {
+                if (totalSeconds <= 0) totalSeconds = 9 * 3600;
+                totalSeconds--;
+                const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                const s = String(totalSeconds % 60).padStart(2, '0');
+ 
+                document.getElementById('timerHours').textContent = toPersianNum(h);
+                document.getElementById('timerMinutes').textContent = toPersianNum(m);
+                document.getElementById('timerSeconds').textContent = toPersianNum(s);
+            }, 1000);
+        }
+ 
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
